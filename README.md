@@ -13,7 +13,6 @@ npm install
 ```bash
 cp .env.sample .env
 ```
-
 ### 4. Levantar el proyecto
 #### 4.1 En desarrollo
 ```bash
