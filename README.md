@@ -2,7 +2,7 @@
 
 ### 1. Clonar el proyecto
 ```bash
-git clone link
+git clone https://github.com/zuzetkaren8/diplomado.git
 ```
 
 ### 2. Instalar dependencias
