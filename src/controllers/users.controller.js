@@ -2,6 +2,7 @@ import { User } from '../models/user.js';
 import { Task } from '../models/task.js';
 import { Status } from '../constants/index.js';
 import { encriptar } from '../common/bcrypt.js';
+import { Op } from 'sequelize';
 
 async function getUsers(req, res, next) {
   try {
@@ -120,6 +121,43 @@ async function getTasks(req, res, next) {
     next(error);
   }
 }
+async function paginacion(req, res, next) {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const orderBy = req.query.orderBy || 'id';
+    const orderDir = (req.query.orderDir || 'DESC').toUpperCase();
+
+    const validOrderFields = ['id', 'username', 'status'];
+    const validOrderDirs = ['ASC', 'DESC'];
+
+    if (!validOrderFields.includes(orderBy) || !validOrderDirs.includes(orderDir)) {
+      return res.status(400).json({ message: 'Parámetros de orden inválidos' });
+    }
+
+    const offset = (page - 1) * limit;
+
+    const where = search
+      ? { username: { [Op.iLike]: `%${search}%` } }
+      : {};
+
+    const { count: total, rows: data } = await User.findAndCountAll({
+      attributes: ['id', 'username', 'status'],
+      where,
+      limit,
+      offset,
+      order: [[orderBy, orderDir]]
+    });
+
+    const pages = Math.ceil(total / limit);
+
+    res.json({ total, page, pages, data });
+
+  } catch (error) {
+    next(error);
+  }
+}
 export default {
     getUsers,
     createUser,
@@ -127,5 +165,6 @@ export default {
     updateUser,
     deleteUser,
     activateInactivate,
-    getTasks
+    getTasks,
+    paginacion
 };
